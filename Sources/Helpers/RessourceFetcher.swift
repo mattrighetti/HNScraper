@@ -6,9 +6,7 @@
 //  Copyright © 2017 Stéphane Sercu. All rights reserved.
 //
 
-import UIKit
-
-
+import Foundation
 
 /// Singleton implementation of a GET/POST request sender
 class RessourceFetcher {

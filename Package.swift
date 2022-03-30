@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "HNScraper",
+    platforms: [.macOS(.v11), .iOS(.v11)],
     products: [
         .library(name: "HNScraper", targets: ["HNScraper"]),
     ],
