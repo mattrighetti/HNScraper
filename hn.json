@@ -53,7 +53,7 @@
         }
     },
     "Comment": {
-        "CS": "<td class='ind'><img src=\"s.gif\"",
+        "CS": "<tr class='athing comtr' id='",
         "Reply": {
             "R": "<form method=\"post\"",
             "Parts": [{
@@ -93,38 +93,34 @@
             "E": "\">"
         },
         "Level": {
-            "S": "height=\"1\" width=\"",
-            "E": "\">",
+            "S": "indent='",
+            "E": "'>",
             "I": "Level"
         },
         "ParentPostId": {
-            "S": "on: <a href=\"item?id=",
-            "E": "\">",
+            "S": "<a class=\"clicky\" href=\"#",
+            "E": "\"",
             "I": "ParentPostId"
         },
         "ASK": [{
-            "S": "class=\"storylink\">",
-            "E": "</a>",
+            "S": "<tr id=\"pagespace\" title=\"",
+            "E": "\"",
             "I": "Title"
         }, {
-            "S": "class=\"hnuser\">",
-            "E": "</a>",
+            "S": "href=\"user?id=",
+            "E": "\"",
             "I": "Username"
         }, {
-            "S": "<span class=\"age\">",
-            "E": "<a ",
-            "I": "TRASH"
-        }, {
-            "S": ">",
-            "E": "</a>",
+            "S": "<span class=\"age\" title=\"",
+            "E": "\">",
             "I": "Time"
         }, {
             "S": "href=\"item?id=",
             "E": "\"",
             "I": "CommentId"
         }, {
-            "S": "</tr>\n      <tr style=\"height:2px\"></tr><tr><td colspan=\"2\"></td><td>",
-            "E": "</td></tr>\n        <tr style=\"height:10px\"></tr><tr><td colspan=\"2\"></td><td>\n          <form",
+            "S": "<tr style=\"height:2px\"></tr><tr><td colspan=\"2\"></td><td>",
+            "E": "</td></tr>",
             "I": "Text"
         }],
         "JOBS": [{
@@ -145,8 +141,8 @@
             "E": "<",
             "I": "Time"
         }, {
-            "S": "class=\"comment\">",
-            "E": "class=\"c",
+            "S": "class=\"commtext ",
+            "E": "c00",
             "I": "TRASH"
         }, {
             "S": "\">",
@@ -158,8 +154,8 @@
             "I": "ReplyUrl"
         }],
         "LinkForMore": {
-            "S": "</td><td class=\"title\"><a href=\"",
-            "E": "\" class=\"morelink\""
+            "S": "<td class='title'><a href='",
+            "E": "' class='morelink' rel='next'>"
         }
     },
     "Reply": {
@@ -191,7 +187,11 @@
             "E": "</a>",
             "I": "user"
         }, {
-            "S": "href=\"front?day=",
+            "S": "created:</td>",
+            "E": "<td>",
+            "I": "TRASH"
+        }, {
+            "S": "<a href=\"front?day=",
             "E": "&birth",
             "I": "created"
         }, {
@@ -203,13 +203,9 @@
             "E": "</textarea>",
             "I": "about"
         }, {
-            "S": "about:</td><td>\n",
+            "S": "about:</td><td style=\"overflow:hidden;\">\n",
             "E": "</td>",
             "I": "about"
-        }, {
-            "S": "created:</td><td>",
-            "E": " ",
-            "I": "age"
         }]
     },
     "ParsingKeys": {
