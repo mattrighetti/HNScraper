@@ -93,13 +93,13 @@
             "E": "\">"
         },
         "Level": {
-            "S": "indent='",
+            "S": "<td class='ind'indent='",
             "E": "'>",
             "I": "Level"
         },
         "ParentPostId": {
-            "S": "<a class=\"clicky\" href=\"#",
-            "E": "\"",
+            "S": "<a href=\"#",
+            "E": "\" class=\"clicky\" aria-hidden=\"true\">parent",
             "I": "ParentPostId"
         },
         "ASK": [{
