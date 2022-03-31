@@ -33,7 +33,7 @@ open class HNUser {
     }
     
     public convenience init?(fromHtml html: String, withParsingConfig parseConfig: [String : Any]) {
-        var userDict: [String : Any]? = parseConfig["User"] != nil ? parseConfig["User"] as? [String: Any] : nil
+        let userDict: [String : Any]? = parseConfig["User"] != nil ? parseConfig["User"] as? [String: Any] : nil
         if (userDict == nil || userDict!["Parts"] == nil) {
             return nil
         }
@@ -43,22 +43,17 @@ open class HNUser {
         var isNoob = false
         let parts = userDict!["Parts"] as! [[String : Any]]
         for dict in parts {
-            var new: NSString? = ""
+            var new: String? = ""
             let isTrash = (dict["I"] as! String) == "TRASH"
             let start = dict["S"] as! String
             let end = dict["E"] as! String
             if scanner.string.contains(start) && scanner.string.contains(end) {
                 scanner.scanBetweenString(stringA: start, stringB: end, into: &new)
-                if (!isTrash && (new?.length)! > 0) {
+                if (!isTrash && (new?.count)! > 0) {
                     if dict["I"] as! String == "user" {
                         var newStr: String = String(describing: new!)
                         isNoob = HNUser.cleanNoobUsername(username: &(newStr))
-                        new = newStr as NSString
-                        /*if new!.contains("<font color=\"#3c963c\">") {
-                            new = new!.replacingOccurrences(of: "<font color=\"#3c963c\">", with: "") as NSString
-                            new = new!.replacingOccurrences(of: "</font>", with: "") as NSString
-                            isNoob = true
-                        }*/
+                        new = newStr
                     }
                     uDict[dict["I"] as! String] = new
                 }
@@ -69,7 +64,6 @@ open class HNUser {
             return nil
         }
         self.init(username: uDict["user"]  as! String, karma: uDict["karma"] as? String ?? "", age: uDict["created"] as? String ?? "", aboutInfo: uDict["about"] as? String, isNoob: isNoob)
-        
     }
     
     public static func cleanNoobUsername(username: inout String) -> Bool {

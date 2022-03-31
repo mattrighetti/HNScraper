@@ -102,13 +102,11 @@ public class HNLogin {
             if let html = String(data: data!, encoding: .utf8) {
                 if (!html.contains("Bad login.") && !html.contains("Unknown or expired link.")) {
                     let scanner = Scanner(string: html)
-                    var trash: NSString? = ""
-                    var karma: NSString? = ""
                     
-                    scanner.scanUpTo("/a>&nbsp;(", into: &trash) // TODO: use config file
-                    scanner.scanString("/a>&nbsp;(", into: &trash)
-                    scanner.scanUpTo(")", into: &karma)
-                    self._user = HNUser(username: username, karma: karma as! String, age: "", aboutInfo: "")
+                    _ = scanner.scanUpToString("/a>&nbsp;(") // TODO: use config file
+                    _ = scanner.scanString("/a>&nbsp;(")
+                    let karma = scanner.scanUpToString(")")
+                    self._user = HNUser(username: username, karma: karma!, age: "", aboutInfo: "")
                     
                     self.getLoggedInUser(user: self._user!, completion: {(user, cookie, error) -> Void in
                         
@@ -197,28 +195,21 @@ public class HNLogin {
                 if let html = String(data: data!, encoding: .utf8)  {
                     if (!html.contains("<a href=\"logout")) {
                         let scanner = Scanner(string: html)
-                        var trash: NSString? = ""
-                        var karma: NSString? = ""
-                        var userString: NSString? = ""
                         
-                        scanner.scanUpTo("<a href=\"threads?id=", into: &trash) // TODO: put that in the parsing config file
-                        scanner.scanString("<a href=\"threads?id=", into: &trash)
-                        scanner.scanUpTo("\">", into: &userString)
-                        scanner.scanUpTo("&nbsp;(", into: &trash)
-                        scanner.scanString("&nbsp;(", into: &trash)
-                        scanner.scanUpTo(")", into: &karma)
+                        _ = scanner.scanUpToString("<a href=\"threads?id=") // TODO: put that in the parsing config file
+                        _ = scanner.scanString("<a href=\"threads?id=")
+                        let userString = scanner.scanUpToString("\">") ?? ""
+                        _ = scanner.scanUpToString("&nbsp;(")
+                        _ = scanner.scanString("&nbsp;(")
+                        let karma = scanner.scanUpToString(")") ?? ""
                         
-                        let user = HNUser(username: userString! as String, karma: karma! as String, age: "", aboutInfo: "")
+                        let user = HNUser(username: userString as String, karma: karma as String, age: "", aboutInfo: "")
                         
                         self.getLoggedInUser(user: user, completion: completion)
-                        
-                        
                     } else {
                         print("getUsernameFromCookie: bad cookie?") // TODO: Logging
                         completion(nil, nil, HNLoginError(error))
                     }
-                    
-                    
                 } else {
                     print("getUsernameFromCookie: Get request failed: not html?")
                     completion(nil, nil, HNLoginError(error))
@@ -227,12 +218,7 @@ public class HNLogin {
                 print("getUsernameFromCookie: Get request failed: no data")
                 completion(nil, nil, HNLoginError(error))
             }
-            
-            
         })
-
-            
-            
     }
     
     private func retrieveSessionCookie() -> HTTPCookie? {
@@ -243,7 +229,6 @@ public class HNLogin {
                         return cookie
                     }
                 }
-                
             }
         }
         
@@ -253,6 +238,4 @@ public class HNLogin {
     public func isLoggedIn() -> Bool {
         return self.sessionCookie != nil && self._user != nil
     }
-    
-    
 }

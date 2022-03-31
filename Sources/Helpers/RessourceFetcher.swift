@@ -40,15 +40,12 @@ class RessourceFetcher {
             } else {
                 return .unknown
             }
-            
         } else {
             return .unknown
         }
     }
     
-    private init() {
-        
-    }
+    private init() {}
     
     static let shared = RessourceFetcher()
     
@@ -68,9 +65,11 @@ class RessourceFetcher {
     private func execRequest(_ request: URLRequest, completion: @escaping ((Data?, URLResponse?, RessourceFetchingError?) -> Void)) {
         let task = URLSession.shared.dataTask(with: request, completionHandler: {(data, response, error) -> Void in
             var ressourceFetchingError: RessourceFetchingError?
+            
             if data == nil {
                 ressourceFetchingError = .noData
             }
+            
             if let httpResponse = response as? HTTPURLResponse {
                 if httpResponse.statusCode >= 500 {
                     ressourceFetchingError = .serverError500Range
@@ -78,9 +77,11 @@ class RessourceFetcher {
                     ressourceFetchingError = .badHTTPRequest400Range
                 }
             }
+            
             if error != nil {
                 ressourceFetchingError = self.errorParsing(error!)
             }
+            
             DispatchQueue.main.async(execute: { ()->() in
                 completion(data, response, ressourceFetchingError)
             })
@@ -97,14 +98,11 @@ class RessourceFetcher {
             } else if data == nil {
                 completion(nil, .noData)
             } else {
-                guard let json = try? JSONSerialization.jsonObject(with: data!, options: .mutableContainers) as! [String: Any]
-                    else {
-                        completion(nil, .parsingError)
-                        return
+                guard let json = try? JSONSerialization.jsonObject(with: data!, options: .mutableContainers) as? [String: Any] else {
+                    completion(nil, .parsingError)
+                    return
                 }
                 completion(json, nil)
-                
-                
             }
         })
     }
@@ -139,7 +137,6 @@ class RessourceFetcher {
         request.allHTTPHeaderFields = [:]
         request.httpMethod = "GET"
         request.allHTTPHeaderFields = HTTPCookie.requestHeaderFields(with: cookies)
-        
         
         self.execRequest(request, completion: {(data, response, error) -> Void in
             completion(data, response, error)

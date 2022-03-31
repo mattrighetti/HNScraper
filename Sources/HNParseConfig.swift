@@ -30,6 +30,7 @@ public class HNParseConfig {
             return _config
         }
     }
+    
     /// Looks for the data in local storage
     private var cacheData: [String: Any]? {
         get {
@@ -41,6 +42,7 @@ public class HNParseConfig {
             }
         }
     }
+    
     /**
      The completion handler is called with the configration data as
      parameter when the json file has been fetched. It firstly

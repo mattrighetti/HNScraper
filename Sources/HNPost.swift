@@ -71,7 +71,7 @@ open class HNPost {
     public convenience init?(fromHtml html: String, withParsingConfig parseConfig: [String : Any]) {
         self.init()
         
-        var postsConfig: [String : Any]? = (parseConfig["Post"] != nil) ? parseConfig["Post"] as? [String : Any] : nil
+        let postsConfig: [String : Any]? = (parseConfig["Post"] != nil) ? parseConfig["Post"] as? [String : Any] : nil
         if postsConfig == nil {
             return nil
         }
@@ -80,12 +80,10 @@ open class HNPost {
             return nil
         }
         
-        
         // Set Up for Scanning
         var postDict: [String : Any] = [:]
         let scanner: Scanner = Scanner(string: html)
-        var upvoteString: NSString? = ""
-        
+        var upvoteString: String? = ""
         
         // Scan for Upvotes
         if (html.contains((postsConfig!["Vote"] as! [String: String])["R"]!)) {
@@ -96,15 +94,14 @@ open class HNPost {
         // Scan from JSON Configuration
         let parts = postsConfig!["Parts"] as! [[String : Any]]
         for part in parts {
-            var new: NSString? = ""
+            var new: String? = ""
             let isTrash = part["I"] as! String  == "TRASH"
             
             scanner.scanBetweenString(stringA: part["S"] as! String, stringB: part["E"] as! String, into: &new)
-            if (!isTrash && (new?.length)! > 0) {
+            if (!isTrash && (new?.count)! > 0) {
                 postDict[part["I"] as! String] = new
             }
         }
-        
         
         // Set Values
         self.url = postDict["UrlString"] != nil ? URL(string: postDict["UrlString"] as! String) : nil
@@ -121,12 +118,10 @@ open class HNPost {
         
         if (postDict["Comments"] != nil && postDict["Comments"] as! String == "discuss") {
             self.commentCount = 0;
-        }
-        else if (postDict["Comments"] != nil) {
+        } else if (postDict["Comments"] != nil) {
             let cScan: Scanner = Scanner(string: postDict["Comments"] as! String)
-            var cCount: NSString? = ""
-            cScan.scanUpTo(" ", into: &cCount)
-            self.commentCount = Int((cCount?.intValue)!)
+            let cCount: String? = cScan.scanUpToString(" ")
+            self.commentCount = Int((cCount! as NSString).integerValue)
         }
         
         // Check if Jobs Post
@@ -136,8 +131,7 @@ open class HNPost {
                 self.id = self.url!.absoluteString.replacingOccurrences(of: "item?id=", with: "")
                 self.url = URL(string: "https://news.ycombinator.com/" + self.url!.absoluteString)!
             }
-        }
-        else {
+        } else {
             // Check if AskHN
             if self.url != nil && !self.url!.absoluteString.contains("http") && self.id.count > 0 {
                 self.type = .askHN

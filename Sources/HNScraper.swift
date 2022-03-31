@@ -233,7 +233,7 @@ public class HNScraper {
         
         var postAr: [HNPost] = [] // stores the results
         var linkForMore: String? = nil // link to next page ofthe list
-        var postsConfig: [String : Any]? = (parseConfig != nil && parseConfig!["Post"] != nil) ? parseConfig!["Post"] as? [String : Any] : nil
+        let postsConfig: [String : Any]? = (parseConfig != nil && parseConfig!["Post"] != nil) ? parseConfig!["Post"] as? [String : Any] : nil
         var htmlComponents: Array<String> = []
         if postsConfig != nil && postsConfig!["CS"] != nil {
             htmlComponents = html!.components(separatedBy: postsConfig!["CS"] as! String)
@@ -291,13 +291,11 @@ public class HNScraper {
      */
     private func parseLinkForMore(html: String, parseConfigS: String, parseConfigE: String) -> String? {
         let scanner: Scanner = Scanner(string: html)
-        var trash: NSString? = ""
         
-        scanner.scanUpTo(parseConfigS, into: &trash)
-        var linkForMore: NSString? = ""
-        scanner.scanString(parseConfigS, into: &trash)
-        scanner.scanUpTo(parseConfigE, into: &linkForMore)
-        var finalLinkForMore = (linkForMore?.replacingOccurrences(of: "/", with: ""))!
+        _ = scanner.scanUpToString(parseConfigS)
+        _ = scanner.scanString(parseConfigS)
+        let linkForMore = scanner.scanUpToString(parseConfigE) ?? ""
+        var finalLinkForMore = linkForMore.replacingOccurrences(of: "/", with: "")
         finalLinkForMore = finalLinkForMore.replacingOccurrences(of: "&amp;", with: "&")
         return finalLinkForMore
     }
@@ -312,7 +310,7 @@ public class HNScraper {
         if postsConfig == nil {
             return nil
         }
-        var linkConfig: [String : String]? = postsConfig!["LinkForMore"] as? [String: String]
+        let linkConfig: [String : String]? = postsConfig!["LinkForMore"] as? [String: String]
         if linkConfig == nil {
             return nil
         }
@@ -333,7 +331,7 @@ public class HNScraper {
         if postsConfig == nil {
             return nil
         }
-        var linkConfig: [String : String]? = postsConfig!["LinkForMore"] as? [String: String]
+        let linkConfig: [String : String]? = postsConfig!["LinkForMore"] as? [String: String]
         if linkConfig == nil {
             return nil
         }
@@ -441,9 +439,8 @@ public class HNScraper {
         var allComments: [HNComment] = [] // parsed comments in linear form
         var lastCommentByLevel: [Int: HNComment] = [:] // Last parsed comment for each level, used to find the parent of a comment
         
-        
         // Set Up
-        var commentDict: [String : Any]? = (parseConfig != nil && parseConfig!["Comment"] != nil) ? parseConfig!["Comment"] as? [String: Any] : nil
+        let commentDict: [String : Any]? = (parseConfig != nil && parseConfig!["Comment"] != nil) ? parseConfig!["Comment"] as? [String: Any] : nil
         if (commentDict == nil) {
             completion(post, [], nil, .missingOrCorruptedConfigFile)
             return
@@ -455,17 +452,16 @@ public class HNScraper {
             return
         }
         
-        
         if commentDict!["Reply"] != nil && (commentDict!["Reply"] as! [String: Any])["R"] != nil && html!.contains((commentDict!["Reply"] as! [String: Any])["R"]! as! String) {
             var cDict: [String: Any] = [:]
             let scanner = Scanner(string: html!)
             
             let parts = (commentDict!["Reply"] as! [String: Any])["Parts"] as! [[String : Any]]
             for part in parts {
-                var new: NSString? = ""
+                var new: String? = ""
                 let isTrash = part["I"] as! String == "TRASH"
                 scanner.scanBetweenString(stringA: part["S"] as! String, stringB: part["E"] as! String, into: &new)
-                if (!isTrash && (new?.length)! > 0) {
+                if (!isTrash && (new?.count)! > 0) {
                     cDict[part["I"] as! String] = new
                 }
                 
@@ -488,7 +484,6 @@ public class HNScraper {
                 completion(post, [], nil, .parsingError)
                 return
             }
-            
         }
         
         if post.type == .jobs {
@@ -501,14 +496,12 @@ public class HNScraper {
                 completion(post, [], nil, .parsingError)
                 return
             }
-            
         }
         
         var linkForMore : String?
         // 1st object is garbage.
         htmlComponents?.remove(at: 0)
         for (index, htmlComponent) in htmlComponents!.enumerated() {
-            
             if let newComment = HNComment(fromHtml: htmlComponent, withParsingConfig: parseConfig!, levelOffset: (post.type == .jobs || post.type == .askHN) ? 1 : 0) {
                 if newComment.level == 0 { // If root comment
                     rootComments.append(newComment)
@@ -528,8 +521,6 @@ public class HNScraper {
             } else {
                 print("error parsing comment")
             }
-            
-            
         }
         // TODO: return error if every comment fail to be parsed (i.e. htmlComponents.count> 0 && comments.count == 0)
         if buildHierarchy {
@@ -537,8 +528,6 @@ public class HNScraper {
         } else {
             completion(post, allComments, linkForMore, nil)
         }
-        
-        
     }
     
     
@@ -634,19 +623,18 @@ public class HNScraper {
                         completion(error ?? .unknown)
                     }
                 }
-                
             })
         } else {
             completion(.invalidURL)
         }
-        
-        
     }
+    
     /// Use the upvote link of a post/comment to upvote it.
     /// If the upvote is successful, nil is passed to the completion handle, otherwise the error is transmitted.
     private func upvoteHNObject(AtUrl urlString: String, objectId: String, completion: @escaping ((HNScraperError?) -> Void)) {
         self.voteOnHNObject(AtUrl: urlString, objectId: objectId, up: true, completion: completion)
     }
+    
     private func unvoteHNObject(AtUrl urlString: String, objectId: String, completion: @escaping ((HNScraperError?) -> Void)) {
         self.voteOnHNObject(AtUrl: urlString, objectId: objectId, up: false, completion: completion)
     }
@@ -656,6 +644,7 @@ public class HNScraper {
         let url = HNScraper.baseUrl + comment.upvoteUrl.replacingOccurrences(of: "&amp;", with: "&")
         self.upvoteHNObject(AtUrl: url, objectId: comment.id, completion: completion)
     }
+    
     /// Upvote a post. For this to be successfull, the upvoteUrl must be correctly set in the post instance and the user must be logged in.
     public func upvote(Post post: HNPost, completion: @escaping ((HNScraperError?) -> Void)) {
         if post.upvoteAdditionURL != nil {
@@ -664,8 +653,8 @@ public class HNScraper {
         } else {
             completion(.invalidURL)
         }
-        
     }
+    
     public func unvote(Post post: HNPost, completion: @escaping ((HNScraperError?) -> Void)) {
         if post.upvoteAdditionURL != nil {
             let url = HNScraper.baseUrl + post.upvoteAdditionURL!.replacingOccurrences(of: "&amp;", with: "&").replacingOccurrences(of: "how=up", with: "how=un")
@@ -673,8 +662,8 @@ public class HNScraper {
         } else {
             completion(.invalidURL)
         }
-        
     }
+    
     public func unvote(Comment comment: HNComment, completion: @escaping ((HNScraperError?) -> Void)) {
         let url = HNScraper.baseUrl + comment.upvoteUrl.replacingOccurrences(of: "&amp;", with: "&").replacingOccurrences(of: "how=up", with: "how=un")
         self.unvoteHNObject(AtUrl: url, objectId: comment.id, completion: completion)
@@ -686,10 +675,12 @@ public class HNScraper {
             completion(.notLoggedIn)
             return
         }
+        
         if post.upvoteAdditionURL != nil {
-            let url = HNScraper.baseUrl + post.upvoteAdditionURL!.replacingOccurrences(of: "&amp;", with: "&")
-                                                                .replacingOccurrences(of: "how=up", with: "how=un")
-                                                                .replacingOccurrences(of: "vote?id=", with: "fave?id=")
+            let url = HNScraper.baseUrl + post.upvoteAdditionURL!
+                .replacingOccurrences(of: "&amp;", with: "&")
+                .replacingOccurrences(of: "how=up", with: "how=un")
+                .replacingOccurrences(of: "vote?id=", with: "fave?id=")
             
             downloadHtmlPage(urlString: url, cookie: HNLogin.shared.sessionCookie, completion: { html, error -> Void in
                 // The favortie url redirect to the list of favorite of the user. We check if the id of the favorited post is in the post list (in the html).
@@ -706,8 +697,8 @@ public class HNScraper {
         } else {
             completion(.invalidURL)
         }
-        
     }
+    
     // TODO: func favorited(post, un=false, completion)
     public func unfavorite(Post post: HNPost, completion: @escaping ((HNScraperError?) -> Void)) {
         if !HNLogin.shared.isLoggedIn() {
@@ -732,7 +723,6 @@ public class HNScraper {
         } else {
             completion(.invalidURL)
         }
-
     }
     
     public func getUserFrom(Username username: String, completion: ((HNUser?, HNScraperError?) -> Void)?) {
@@ -752,6 +742,4 @@ public class HNScraper {
             completion?(HNUser(fromHtml: html!, withParsingConfig: HNParseConfig.shared.data!), error)
         })
     }
-    
-    
 }

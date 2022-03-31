@@ -23,8 +23,8 @@ class HNLoginTest: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
         cleanCookies()
-        
     }
+    
     func cleanCookies() {
         let cookieStore = HTTPCookieStorage.shared
         for cookie in cookieStore.cookies ?? [] {
@@ -42,6 +42,7 @@ class HNLoginTest: XCTestCase {
             XCTAssertEqual(user?.username, "abdurhtl")
             exp.fulfill()
         })
+        
         let exp2 = expectation(description: "Correct login with testHNScrapper")
         HNLogin.shared.login(username: "testHNScrapper", psw: "&$!?èé%`ç\"'-some_thing", completion: {(user, cookie, error) -> Void in
             XCTAssertNotNil(cookie)
@@ -63,7 +64,6 @@ class HNLoginTest: XCTestCase {
         wait(for: [exp], timeout: HNScraperTest.defaultTimeOut)
     }
     
-    
     func testIsLoggedIn() {
         let exp = expectation(description: "isLoggedIn() returns true")
         XCTAssertFalse(HNLogin.shared.isLoggedIn())
@@ -73,7 +73,5 @@ class HNLoginTest: XCTestCase {
             
         })
         wait(for: [exp], timeout: HNScraperTest.defaultTimeOut)
-        
     }
-    
 }
