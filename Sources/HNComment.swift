@@ -42,6 +42,20 @@ open class HNComment: BaseComment {
         case jobs
     }
     
+    public enum HNCommentShowType {
+        case `default`
+        case downvoted
+        
+        init(from identifier: String?) {
+            switch identifier {
+            case "c00":
+                self = .`default`
+            default:
+                self = .downvoted
+            }
+        }
+    }
+    
     public var type: HNCommentType! = .defaultType
     public var text: String! = ""
     public var id: String! = ""
@@ -55,12 +69,18 @@ open class HNComment: BaseComment {
     public var downvoteUrl: String! = ""
     public var upvoted: Bool = false
     
+    public var showType: HNCommentShowType = .default
+    
     
     public convenience init?(fromHtml html: String, withParsingConfig parseConfig: [String : Any], levelOffset: Int = 0) {
         self.init()
         let commentDict: [String : Any]? = parseConfig["Comment"] != nil ? parseConfig["Comment"] as? [String: Any] : nil
         
         if commentDict == nil {
+            return nil
+        }
+        
+        if html.contains("[deleted]") || html.contains("[flagged]") {
             return nil
         }
         
@@ -108,6 +128,7 @@ open class HNComment: BaseComment {
         
         self.id = cDict["CommentId"] as? String ?? ""
         self.text = cDict["Text"] as? String ?? ""
+        self.showType = HNCommentShowType(from: cDict["ShowType"] as? String)
         self.username = cDict["Username"] as? String ?? ""
         self.isOPNoob = HNUser.cleanNoobUsername(username: &(self.username!))
         self.created = cDict["Time"] as? String ?? ""
@@ -151,6 +172,7 @@ open class HNComment: BaseComment {
         newComment.isOPNoob = HNUser.cleanNoobUsername(username: &(newComment.username!))
         newComment.created = cDict["Time"] as? String ?? ""
         newComment.text = cDict["Text"] as? String ?? ""
+        newComment.showType = HNCommentShowType(from: cDict["ShowType"] as? String)
         newComment.type = .askHN
         
         if upvoteUrl != nil {

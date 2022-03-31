@@ -28,6 +28,7 @@ class HNCommentText: XCTestCase {
             XCTAssertEqual(comment!.username, "zozbot234")
             XCTAssertEqual(comment!.id, "30857897")
             XCTAssertEqual(comment!.level, 3)
+            XCTAssertEqual(comment!.showType, .default)
             XCTAssertNil(comment!.parentId)
             XCTAssertEqual(comment!.type, .defaultType)
             XCTAssertEqual(comment!.created!, "57 minutes ago")
@@ -58,6 +59,7 @@ class HNCommentText: XCTestCase {
             XCTAssertEqual(comment!.username, "glorfindel66")
             XCTAssertEqual(comment!.id, "30857322")
             XCTAssertEqual(comment!.level, 4)
+            XCTAssertEqual(comment!.showType, .default)
             XCTAssertNil(comment!.parentId)
             XCTAssertEqual(comment!.type, .defaultType)
             XCTAssertEqual(comment!.created!, "1 hour ago")
@@ -71,7 +73,7 @@ class HNCommentText: XCTestCase {
     
     func testInitFromHtmlDownvoted() {
         let html = """
-        <tr class="athing comtr" id="30861845"><td><table border="0">  <tbody><tr>    <td class="ind" indent="1"><img src="s.gif" width="40" height="1"></td><td class="votelinks" valign="top">
+        <tr class="athing comtr" id="30861845"><td><table border="0">  <tbody><tr>    <td class='ind'indent='1'><img src="s.gif" width="40" height="1"></td><td class="votelinks" valign="top">
               <center><a id="up_30861845" href="vote?id=30861845&amp;how=up&amp;goto=item%3Fid%3D30861564"><div class="votearrow" title="upvote"></div></a></center>    </td><td class="default"><div style="margin-top:2px; margin-bottom:-10px;"><span class="comhead">
                   <a href="user?id=mikeInAlaska" class="hnuser">mikeInAlaska</a> <span class="age" title="2022-03-30T22:52:55"><a href="item?id=30861845">1 hour ago</a></span> <span id="unv_30861845"></span><span class="navs"> | <a href="#30861730" class="clicky" aria-hidden="true">parent</a> | <a href="#30862214" class="clicky" aria-hidden="true">prev</a></span> <a class="togg clicky" id="30861845" n="1" href="javascript:void(0)">[–]</a><span class="onstory"></span>                  </span></div><br><div class="comment">
                           <span class="commtext c5a">Maybe Boston Dynamics has indeed done a lot better than The John Hopkins Beast</span>
@@ -89,11 +91,63 @@ class HNCommentText: XCTestCase {
             XCTAssertEqual(comment!.username, "mikeInAlaska")
             XCTAssertEqual(comment!.id, "30861845")
             XCTAssertEqual(comment!.level, 1)
+            XCTAssertEqual(comment!.showType, .downvoted)
             XCTAssertNil(comment!.parentId)
             XCTAssertEqual(comment!.type, .defaultType)
             XCTAssertEqual(comment!.created!, "1 hour ago")
             XCTAssertFalse(comment!.text.isEmpty)
             XCTAssertTrue(comment!.text.hasPrefix("Maybe Boston Dynamics has indeed done a lot better than The John Hopkins Beast"))
+            expectation.fulfill()
+        }
+        task.resume()
+        wait(for: [expectation], timeout: 10)
+    }
+    
+    func testInitFromHtmlDownvotedPlus() {
+        let html = """
+        <tr class='athing comtr' id='30865038'><td><table border='0'>  <tr>    <td class='ind'indent='0'><img src="s.gif" height="1" width="0"></td><td valign="top" class="votelinks">
+              <center><a id='up_30865038'href='vote?id=30865038&amp;how=up&amp;goto=item%3Fid%3D30862612'><div class='votearrow' title='upvote'></div></a></center>    </td><td class="default"><div style="margin-top:2px; margin-bottom:-10px;"><span class="comhead">
+                  <a href="user?id=t0bia_s" class="hnuser">t0bia_s</a> <span class="age" title="2022-03-31T08:28:47"><a href="item?id=30865038">3 hours ago</a></span> <span id="unv_30865038"></span><span class="navs"> | <a href="#30864309" class="clicky" aria-hidden="true">prev</a></span> <a class="togg clicky" id="30865038" n="2" href="javascript:void(0)">[–]</a><span class="onstory"></span>                  </span></div><br><div class="comment">
+                          <span class="commtext cbe">I do not recommend mastodon. It is censored. I was banned because of sharing my own satiric propaganda posters.</span>
+                      <div class='reply'>        <p><font size="1">
+                              <u><a href="reply?id=30865038&amp;goto=item%3Fid%3D30862612%2330865038">reply</a></u>
+                          </font>
+              </div></div></td></tr>
+        """
+        let expectation = expectation(description: "timeout")
+        let task = URLSession.shared.dataTask(with: URL(string: "http://localhost:8080/hn.json")!) { data, response, error in
+            let config = try! JSONSerialization.jsonObject(with: data!, options: .mutableContainers) as! [String:Any]
+            let comment = HNComment(fromHtml: html, withParsingConfig: config)
+            XCTAssertNotNil(comment)
+            XCTAssertEqual(comment!.username, "t0bia_s")
+            XCTAssertEqual(comment!.id, "30865038")
+            XCTAssertEqual(comment!.level, 0)
+            XCTAssertEqual(comment!.showType, .downvoted)
+            XCTAssertNil(comment!.parentId)
+            XCTAssertEqual(comment!.type, .defaultType)
+            XCTAssertEqual(comment!.created!, "3 hours ago")
+            XCTAssertFalse(comment!.text.isEmpty)
+            XCTAssertTrue(comment!.text.hasPrefix("I do not recommend mastodon. It is censored. I was banned because of sharing my own satiric propaganda posters."))
+            expectation.fulfill()
+        }
+        task.resume()
+        wait(for: [expectation], timeout: 10)
+    }
+    
+    func testInitFromHtmlDeleted() {
+        let html = """
+        <tr class='athing comtr' id='30855896'><td><table border='0'>  <tr>    <td class='ind'indent='0'><img src="s.gif" height="1" width="0"></td><td valign="top" class="votelinks">
+              <center><img src="s.gif" height="1" width="14"></center>    </td><td class="default"><div style="margin-top:2px; margin-bottom:-10px;"><span class="comhead">
+                  <span class="age" title="2022-03-30T14:43:48"><a href="item?id=30855896">22 hours ago</a></span> <span id="unv_30855896"></span><span class="navs"> | <a href="#30856567" class="clicky" aria-hidden="true">prev</a></span> <a class="togg clicky" id="30855896" n="3" href="javascript:void(0)">[–]</a><span class="onstory"></span>                  </span></div><br><div class="comment">
+                          [deleted]              <div class='reply'>        <p><font size="1">
+                          </font>
+              </div></div></td></tr>
+        """
+        let expectation = expectation(description: "timeout")
+        let task = URLSession.shared.dataTask(with: URL(string: "http://localhost:8080/hn.json")!) { data, response, error in
+            let config = try! JSONSerialization.jsonObject(with: data!, options: .mutableContainers) as! [String:Any]
+            let comment = HNComment(fromHtml: html, withParsingConfig: config)
+            XCTAssertNil(comment)
             expectation.fulfill()
         }
         task.resume()
