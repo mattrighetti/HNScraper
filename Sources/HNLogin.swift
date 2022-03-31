@@ -22,10 +22,11 @@ public class HNLogin {
     public func addObserver(_ observer: HNLoginDelegate) {
         self.observers.append(observer)
     }
+    
     private init() {
         if let cookie = self.retrieveSessionCookie() {
             self._sessionCookie = cookie
-            self.getUsernameFromCookie(cookie, completion: {(user, cookie, error) -> Void in
+            self.getUsernameFromCookie(cookie) { (user, cookie, error) -> Void in
                 if cookie != nil {
                     self._user = user
                     self._sessionCookie = cookie
@@ -35,7 +36,7 @@ public class HNLogin {
                         }
                     }
                 }
-            })
+            }
         }
     }
     
@@ -48,6 +49,7 @@ public class HNLogin {
         init?(_ error: RessourceFetcher.RessourceFetchingError?) {
             self.init(HNScraper.HNScraperError(error))
         }
+        
         init?(_ error: HNScraper.HNScraperError?) {
             if error == nil {
                 return nil
@@ -72,12 +74,12 @@ public class HNLogin {
             return _sessionCookie
         }
     }
+    
     public var user: HNUser? {
         get {
             return _user
         }
     }
-    
     
     /**
      * Log a user in useing the specified credentials. In case of success, 
@@ -95,7 +97,7 @@ public class HNLogin {
         }
         
         RessourceFetcher.shared.post(urlString: url, data: bodyData, completion: {data, reponse, error -> Void in
-            if data == nil {
+            guard data != nil else {
                 completion(nil, nil, HNLoginError(error) ?? .unknown)
                 return
             }
@@ -108,37 +110,29 @@ public class HNLogin {
                     let karma = scanner.scanUpToString(")")
                     self._user = HNUser(username: username, karma: karma!, age: "", aboutInfo: "")
                     
-                    self.getLoggedInUser(user: self._user!, completion: {(user, cookie, error) -> Void in
-                        
+                    self.getLoggedInUser(user: self._user!) { (user, cookie, error) -> Void in
                         if self.isLoggedIn() {
                             for observer in self.observers {
                                 observer.didLogin(user: user!, cookie: cookie!)
                             }
                         }
                         completion(user, cookie, error)
-                    })
-                    
-                    
+                    }
                 } else {
                     print("Probably wrong password") // TODO: logging
                     completion(nil, nil, .badCredentials)
                 }
-                
-                
             } else {
                 print("Post request failed")
                 completion(nil, nil, HNLoginError(error) ?? .unknown)
             }
-            
         })
-        
     }
     
     public func logout() {
         if self._sessionCookie != nil {
             HTTPCookieStorage.shared.deleteCookie(self._sessionCookie!)
             self._sessionCookie = nil
-            
         }
         self._user = nil
     }
@@ -173,7 +167,6 @@ public class HNLogin {
                         self._sessionCookie = self.retrieveSessionCookie()
                         self._user = newUser
                         completion(newUser, self._sessionCookie, HNLoginError(error))
-                        
                     })
                 } else {
                     print("Couldn't fetch user informations")
@@ -182,7 +175,6 @@ public class HNLogin {
             } else {
                 completion(nil, nil, HNLoginError(error) ?? .unknown)
             }
-            
         })
     }
     

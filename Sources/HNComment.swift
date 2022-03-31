@@ -25,7 +25,6 @@ open class BaseComment {
     public func addReply(_ reply: BaseComment) {
         self.replies.append(reply)
     }
-    
 }
 
 open class HNComment: BaseComment {
@@ -42,7 +41,6 @@ open class HNComment: BaseComment {
         case askHN
         case jobs
     }
-    
     
     public var type: HNCommentType! = .defaultType
     public var text: String! = ""
@@ -162,6 +160,7 @@ open class HNComment: BaseComment {
         newComment.id = cDict["CommentId"] as? String ?? ""
         return newComment
     }
+    
     public static func parseJobComment(html: String, withParsingConfig parseConfig: [String : Any]) -> HNComment? {
         let commentDict: [String : Any]? = parseConfig["Comment"] != nil ? parseConfig["Comment"] as? [String: Any] : nil
         

@@ -461,10 +461,9 @@ public class HNScraper {
                 var new: String? = ""
                 let isTrash = part["I"] as! String == "TRASH"
                 scanner.scanBetweenString(stringA: part["S"] as! String, stringB: part["E"] as! String, into: &new)
-                if (!isTrash && (new?.count)! > 0) {
+                if !isTrash, let new = new, new.count > 0 {
                     cDict[part["I"] as! String] = new
                 }
-                
             }
             post.replyAction = cDict["action"] as? String ?? ""
             post.replyParent = cDict["parent"] as? String ?? ""

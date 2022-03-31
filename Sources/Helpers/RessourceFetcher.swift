@@ -25,7 +25,6 @@ class RessourceFetcher {
         case unknown
     }
     
-    
     /// Turns a URLError to a simpler RessourceFetchingError
     private func errorParsing(_ error: Error) -> RessourceFetchingError {
         if let urlError = error as? URLError {
@@ -53,9 +52,9 @@ class RessourceFetcher {
     func fetchData(urlString: String, completion: @escaping FetchCompletion, timeout: TimeInterval = 20) {
         if let url = URL(string: urlString) {
             let req = URLRequest(url: url, cachePolicy: .reloadIgnoringCacheData, timeoutInterval: timeout)
-            self.execRequest(req, completion: {(data, response, error) -> Void in
+            self.execRequest(req) { (data, response, error) -> Void in
                 completion(data, error)
-            })
+            }
         } else {
             completion(nil, .invalidURL)
         }
@@ -63,7 +62,7 @@ class RessourceFetcher {
     
     /// Creates a dataTask with the specified request and passes the response to the completion closure. Basically just helps handling URLErrors.
     private func execRequest(_ request: URLRequest, completion: @escaping ((Data?, URLResponse?, RessourceFetchingError?) -> Void)) {
-        let task = URLSession.shared.dataTask(with: request, completionHandler: {(data, response, error) -> Void in
+        let task = URLSession.shared.dataTask(with: request) { (data, response, error) -> Void in
             var ressourceFetchingError: RessourceFetchingError?
             
             if data == nil {
@@ -82,11 +81,10 @@ class RessourceFetcher {
                 ressourceFetchingError = self.errorParsing(error!)
             }
             
-            DispatchQueue.main.async(execute: { ()->() in
+            DispatchQueue.main.async {
                 completion(data, response, ressourceFetchingError)
-            })
-            
-        })
+            }
+        }
         task.resume()
     }
     
@@ -121,9 +119,9 @@ class RessourceFetcher {
         request.httpBody = data
         request.allHTTPHeaderFields = HTTPCookie.requestHeaderFields(with: cookies)
         
-        self.execRequest(request, completion: {(data, response, error) -> Void in
+        self.execRequest(request) { (data, response, error) -> Void in
             completion(data, response, error)
-        })
+        }
     }
     
     func get(urlString: String, cookies: [HTTPCookie] = [], completion: @escaping ((Data?, URLResponse?, RessourceFetchingError?) -> Void)) {
@@ -138,9 +136,9 @@ class RessourceFetcher {
         request.httpMethod = "GET"
         request.allHTTPHeaderFields = HTTPCookie.requestHeaderFields(with: cookies)
         
-        self.execRequest(request, completion: {(data, response, error) -> Void in
+        self.execRequest(request) { (data, response, error) -> Void in
             completion(data, response, error)
-        })
+        }
     }
 }
 
