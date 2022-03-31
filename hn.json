@@ -141,11 +141,11 @@
             "E": "<",
             "I": "Time"
         }, {
-            "S": "class=\"commtext ",
-            "E": "c00",
-            "I": "TRASH"
+            "S": "<span class=\"commtext ",
+            "E": "\"",
+            "I": "ShowType"
         }, {
-            "S": "\">",
+            "S": ">",
             "E": "</span>",
             "I": "Text"
         }, {
