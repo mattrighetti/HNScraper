@@ -161,7 +161,8 @@ open class HNComment: BaseComment {
             var new: String? = ""
             let isTrash = dict["I"] as! String == "TRASH"
             scanner.scanBetweenString(stringA: dict["S"] as! String, stringB: dict["E"] as! String, into: &new)
-            if (!isTrash && (new?.count)! > 0) {
+            guard let new = new else { continue }
+            if (!isTrash && new.count > 0) {
                 cDict[dict["I"] as! String] = new
             }
         }
